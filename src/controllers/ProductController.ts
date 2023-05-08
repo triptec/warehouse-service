@@ -6,6 +6,20 @@ import crypto from 'crypto';
 import { validateId } from '../utils/validation';
 
 const productRepository = new ProductRepository();
+import { z } from 'zod';
+
+const CreateProduct = z.object({
+  name: z.string().min(1).max(255),
+  stock: z.number().min(0),
+  price: z.object({
+    amount: z.number().min(0),
+    currency: z.enum(['SEK', 'EUR', 'USD']),
+  }),
+});
+
+const UpdateProductStock = z.object({
+  stock: z.number().min(0),
+});
 
 class ProductController {
   static async getAllProducts(_req: Request, res: Response) {
@@ -33,7 +47,7 @@ class ProductController {
 
   static async updateProductStock(req: Request, res: Response) {
     const id = validateId(req.params['id']);
-    const { stock } = req.body;
+    const { stock } = UpdateProductStock.parse(req.body);
     const updatedProduct = productRepository.updateProductStock(id, stock);
     if (updatedProduct) {
       res.status(204).send();
@@ -43,7 +57,7 @@ class ProductController {
   }
 
   static async createProduct(req: Request, res: Response) {
-    const { name, price, stock } = req.body;
+    const { name, price, stock } = CreateProduct.parse(req.body);
     const newProduct = new Product(crypto.randomUUID(), name, price, stock);
     productRepository.createProduct(newProduct);
     res.status(201).json(newProduct);

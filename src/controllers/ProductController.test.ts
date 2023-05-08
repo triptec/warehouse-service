@@ -74,6 +74,26 @@ describe('ProductController', () => {
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ error: 'Product not found' });
     });
+
+    it('should fail on invalid data', async () => {
+      let response = await request(app)
+        .patch('/products/f74fb16e-62b2-4af1-abed-1a0516200d1b')
+        .send({ stock: -1 });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'Number must be greater than or equal to 0' }],
+      });
+
+      response = await request(app)
+        .patch('/products/f74fb16e-62b2-4af1-abed-1a0516200d1b')
+        .send({ stock: 'a' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'Expected number, received string' }],
+      });
+    });
   });
 
   describe('POST /products', () => {
@@ -91,6 +111,87 @@ describe('ProductController', () => {
 
       expect(response.status).toBe(201);
       expect(response.body).toMatchObject(newProduct);
+    });
+
+    it('should fail on invalid data', async () => {
+      const validProduct = {
+        name: 'New Product',
+        price: {
+          amount: 999.99,
+          currency: 'SEK',
+        },
+        stock: 5,
+      };
+
+      let response = await request(app)
+        .post('/products')
+        .send({ ...validProduct, name: '' });
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'String must contain at least 1 character(s)' }],
+      });
+
+      response = await request(app)
+        .post('/products')
+        .send({ ...validProduct, name: 'a'.repeat(256) });
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'String must contain at most 255 character(s)' }],
+      });
+
+      response = await request(app)
+        .post('/products')
+        .send({
+          ...validProduct,
+          price: { ...validProduct.price, amount: 'a' },
+        });
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'Expected number, received string' }],
+      });
+
+      response = await request(app)
+        .post('/products')
+        .send({
+          ...validProduct,
+          price: { ...validProduct.price, amount: -1 },
+        });
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'Number must be greater than or equal to 0' }],
+      });
+
+      response = await request(app)
+        .post('/products')
+        .send({
+          ...validProduct,
+          price: { ...validProduct.price, currency: 'invalid-currency' },
+        });
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [
+          {
+            message:
+              "Invalid enum value. Expected 'SEK' | 'EUR' | 'USD', received 'invalid-currency'",
+          },
+        ],
+      });
+
+      response = await request(app)
+        .post('/products')
+        .send({ ...validProduct, stock: 'a' });
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'Expected number, received string' }],
+      });
+
+      response = await request(app)
+        .post('/products')
+        .send({ ...validProduct, stock: -1 });
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'Number must be greater than or equal to 0' }],
+      });
     });
   });
 });
