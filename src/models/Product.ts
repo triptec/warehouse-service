@@ -3,6 +3,13 @@ interface Price {
   currency: string;
 }
 
+export interface FormattedProduct {
+  id: string;
+  name: string;
+  price: string;
+  stock: number;
+}
+
 class Product {
   id: string;
   name: string;

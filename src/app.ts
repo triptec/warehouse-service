@@ -1,26 +1,79 @@
 import 'express-async-errors';
-import express, { Application, NextFunction, Request, Response } from 'express';
-import router from './routes/index';
+
+import express, {
+  Application,
+  json,
+  NextFunction,
+  Request,
+  Response,
+  urlencoded,
+} from 'express';
+import swaggerUi from 'swagger-ui-express';
+import { ValidateError } from 'tsoa';
 import { ZodError } from 'zod';
+
+import { RegisterRoutes } from './routes';
 
 // Create Express app
 const app: Application = express();
 
-// Parse JSON bodies
-app.use(express.json());
+app.use(
+  urlencoded({
+    extended: true,
+  })
+);
 
-// Register routes
-app.use(router);
+// Parse JSON bodies
+app.use(json());
+
+// OpenAPI docs
+app.use(
+  '/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(undefined, {
+    swaggerOptions: {
+      url: '/swagger.json',
+    },
+  })
+);
+
+app.use(express.static('public'));
+
+RegisterRoutes(app);
+
+const mapErrors = (errors: any) => {
+  return errors.sort().reduce((acc, curr) => {
+    if (curr.path) {
+      acc[`requestBody.${curr.path.join('.')}`] = { message: curr.message };
+    }
+    return acc;
+  }, {});
+};
 
 // Error Handler Middleware
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  if (err instanceof ZodError) {
-    res.status(400).json({ errors: err.errors });
-  } else {
-    // Handle generic error
-    console.trace(err);
-    res.status(500).json({ error: 'Internal Server Error' });
+  // Handle tsoa validation errors
+  if (err instanceof ValidateError) {
+    return res.status(422).json({
+      message: 'Validation Failed',
+      details: err.fields,
+    });
   }
+
+  // Handle Zod Errors
+  if (err instanceof ZodError) {
+    return res.status(422).json({
+      message: 'Validation Failed',
+      details: mapErrors(err.errors),
+    });
+  }
+
+  // Handle generic error
+  console.trace(err);
+  return res.status(500).json({
+    message: 'Internal Server Error',
+    details: null,
+  });
 });
 
 export default app;

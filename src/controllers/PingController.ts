@@ -1,9 +1,11 @@
-import { Request, Response } from 'express';
+import { Controller, Get, Route } from 'tsoa';
 
-export default class PingController {
-  static async getMessage(_req: Request, res: Response) {
-    res.json({
+@Route('ping')
+export class PingController extends Controller {
+  @Get()
+  public async getMessage(): Promise<{ message: string }> {
+    return {
       message: 'pong',
-    });
+    };
   }
 }
