@@ -1,12 +1,17 @@
 import express from 'express';
 import PingController from '../controllers/PingController';
+import ProductController from '../controllers/ProductController';
 
+// Create Express router
 const router = express.Router();
 
-router.get('/ping', async (_req, res) => {
-  const controller = new PingController();
-  const response = await controller.getMessage();
-  return res.send(response);
-});
+// Ping route for health checks
+router.get('/ping', PingController.getMessage);
+
+// Product routes
+router.get('/products', ProductController.getAllProducts);
+router.get('/products/:id', ProductController.getProductById);
+router.patch('/products/:id', ProductController.updateProductStock);
+router.post('/products', ProductController.createProduct);
 
 export default router;
