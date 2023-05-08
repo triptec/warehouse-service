@@ -14,4 +14,9 @@ router.get('/products/:id', ProductController.getProductById);
 router.patch('/products/:id', ProductController.updateProductStock);
 router.post('/products', ProductController.createProduct);
 
+// Error route for testing error handling
+router.get('/failure', async () => {
+    throw new Error('unknown error');
+});
+
 export default router;

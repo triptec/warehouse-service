@@ -6,6 +6,10 @@ GET http://localhost:3000/products
 
 GET http://localhost:3000/products/f74fb16e-62b2-4af1-abed-1a0516200d1b
 
+### Get unexpected error
+
+GET http://localhost:3000/failure
+
 ### Update product
 
 PATCH http://localhost:3000/products/f74fb16e-62b2-4af1-abed-1a0516200d1b
