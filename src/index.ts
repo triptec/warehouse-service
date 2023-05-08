@@ -1,15 +1,12 @@
-import express, { Request, Response } from 'express';
+import express, { Application } from 'express';
+import router from './routes';
+import config from './configs/config';
 
-// Create Express instance
-const app = express();
-const port = 3000;
+const app: Application = express();
 
-// Define a route handler
-app.get('/', (_req: Request, res: Response) => {
-  res.send('Hello, World!');
-});
+app.use(router);
 
 // Start the server
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+app.listen(config.port, () => {
+  console.log(`Server is running at http://localhost:${config.port}`);
 });
