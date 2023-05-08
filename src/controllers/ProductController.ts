@@ -1,17 +1,11 @@
 import { Request, Response } from 'express';
 
 import ProductRepository from '../repositories/ProductRepository';
-import Product from '../models/product';
+import Product from '../models/Product';
 import crypto from 'crypto';
+import { validateId } from '../utils/validation';
 
 const productRepository = new ProductRepository();
-
-function validateId(id: string | undefined): string {
-  if (!id || typeof id !== 'string') {
-    throw new Error('Invalid ID parameter');
-  }
-  return id;
-}
 
 class ProductController {
   static async getAllProducts(_req: Request, res: Response) {

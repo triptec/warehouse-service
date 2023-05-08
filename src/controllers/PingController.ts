@@ -1,11 +1,9 @@
-interface PingResponse {
-  message: string;
-}
+import { Request, Response } from 'express';
 
 export default class PingController {
-  static async getMessage(): Promise<PingResponse> {
-    return {
+  static async getMessage(_req: Request, res: Response) {
+    res.json({
       message: 'pong',
-    };
+    });
   }
 }
