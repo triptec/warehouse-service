@@ -1,6 +1,5 @@
-import config from './configs/config';
-
 import app from './app';
+import config from './configs/config';
 
 // Start the server
 app.listen(config.port, () => {
